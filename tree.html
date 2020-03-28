@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=UA-138288185-2"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+
+      gtag("config", "UA-138288185-2");
+    </script>
+
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>COVID-19-tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" type="text/css" media="screen" href="css/main.css" />
+    <link rel="icon" href="./img/favicon.png" type="image/gif" sizes="16x16" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,400;1,700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+	
+      .node {
+        cursor: pointer;
+      }
+    
+      .node circle {
+        fill: #fff;
+        stroke: red;
+        stroke-width: 3px;
+      }
+    
+      .node text {
+        font: 12px sans-serif;
+        fill: white;
+        
+      }
+    
+      .link {
+        fill: none;
+        stroke: red;
+        stroke-width: 2px;
+      }
+      
+    </style>
+
+
+  </head>
+  <body>
+    
+<!-- load the d3.js library -->	
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+
+    <div class="covid-heading">COVID-19-LK</div>
+    <div class="covid-subhead">A Sri Lankan Coronavirus Tracker</div>
+
+    
+    <div >
+
+      <!-- the sexually intimidating script............................................................... -->
+      <script>
+
+        var treeData = [
+          {
+            "name": "Top Level",
+            "parent": "null",
+            "children": [
+              {
+                "name": "Level 2: A",
+                "parent": "Top Level",
+                "children": [
+                  {
+                    "name": "Son of A",
+                    "parent": "Level 2: A"
+                  },
+                  {
+                    "name": "Daughter of A",
+                    "parent": "Level 2: A"
+                  }
+                ]
+              },
+              {
+                "name": "Level 2: B",
+                "parent": "Top Level"
+              }
+            ]
+          }
+        ];
+        
+        
+        // ************** Generate the tree diagram	 *****************
+        var margin = {top: 20, right: 120, bottom: 20, left: 120},
+          width = 960 - margin.right - margin.left,
+          height = 500 - margin.top - margin.bottom;
+          
+        var i = 0,
+          duration = 750,
+          root;
+        
+        var tree = d3.layout.tree()
+          .size([height, width]);
+        
+        var diagonal = d3.svg.diagonal()
+          .projection(function(d) { return [d.y, d.x]; });
+        
+        var svg = d3.select("body").append("svg")
+          .attr("width", width + margin.right + margin.left)
+          .attr("height", height + margin.top + margin.bottom)
+          .append("g")
+          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        
+        root = treeData[0];
+        root.x0 = height / 2;
+        root.y0 = 0;
+          
+        update(root);
+        
+        d3.select(self.frameElement).style("height", "500px");
+        
+        function update(source) {
+        
+          // Compute the new tree layout.
+          var nodes = tree.nodes(root).reverse(),
+            links = tree.links(nodes);
+        
+          // Normalize for fixed-depth.
+          nodes.forEach(function(d) { d.y = d.depth * 180; });
+        
+          // Update the nodes…
+          var node = svg.selectAll("g.node")
+            .data(nodes, function(d) { return d.id || (d.id = ++i); });
+        
+          // Enter any new nodes at the parent's previous position.
+          var nodeEnter = node.enter().append("g")
+            .attr("class", "node")
+            .attr("transform", function(d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
+            .on("click", click);
+        
+          nodeEnter.append("circle")
+            .attr("r", 1e-6)
+            .style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
+        
+          nodeEnter.append("text")
+            .attr("x", function(d) { return d.children || d._children ? -13 : 13; })
+            .attr("dy", ".35em")
+            .attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
+            .text(function(d) { return d.name; })
+            .style("fill-opacity", 1e-6);
+        
+          // Transition nodes to their new position.
+          var nodeUpdate = node.transition()
+            .duration(duration)
+            .attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; });
+        
+          nodeUpdate.select("circle")
+            .attr("r", 10)
+            .style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
+        
+          nodeUpdate.select("text")
+            .style("fill-opacity", 1);
+        
+          // Transition exiting nodes to the parent's new position.
+          var nodeExit = node.exit().transition()
+            .duration(duration)
+            .attr("transform", function(d) { return "translate(" + source.y + "," + source.x + ")"; })
+            .remove();
+        
+          nodeExit.select("circle")
+            .attr("r", 1e-6);
+        
+          nodeExit.select("text")
+            .style("fill-opacity", 1e-6);
+        
+          // Update the links…
+          var link = svg.selectAll("path.link")
+            .data(links, function(d) { return d.target.id; });
+        
+          // Enter any new links at the parent's previous position.
+          link.enter().insert("path", "g")
+            .attr("class", "link")
+            .attr("d", function(d) {
+            var o = {x: source.x0, y: source.y0};
+            return diagonal({source: o, target: o});
+            });
+        
+          // Transition links to their new position.
+          link.transition()
+            .duration(duration)
+            .attr("d", diagonal);
+        
+          // Transition exiting nodes to the parent's new position.
+          link.exit().transition()
+            .duration(duration)
+            .attr("d", function(d) {
+            var o = {x: source.x, y: source.y};
+            return diagonal({source: o, target: o});
+            })
+            .remove();
+        
+          // Stash the old positions for transition.
+          nodes.forEach(function(d) {
+          d.x0 = d.x;
+          d.y0 = d.y;
+          });
+        }
+        
+        // Toggle children on click.
+        function click(d) {
+          if (d.children) {
+          d._children = d.children;
+          d.children = null;
+          } else {
+          d.children = d._children;
+          d._children = null;
+          }
+          update(d);
+        }
+        
+        </script>
+
+
+
+        <!-- the sexually intimidating script............................................................... -->
+
+
+
+    </div>
+
+
+
+    <br /><br />
+    <hr style="width:80%" />
+    <br />
+
+    <div class="category-grid">CONFIRMED CASES SINCE THE SECOND PATIENT</div>
+    <canvas id="myChart" width="400" height="400"></canvas>
+
+    <br />
+    <hr style="width:80%" />
+    <div class="other-stats">OTHER STATS</div>
+
+    <div>
+      <div class="category-grid">
+        NEW LOCAL CASES <br />
+        IN THE LAST 24 HOURS
+      </div>
+      <div class="number-grid" id="new-cases">00</div>
+    </div>
+    <div>
+      <div class="category-grid">
+        NEW LOCAL DEATHS <br />
+        IN THE LAST 24 HOURS
+      </div>
+      <div class="number-grid" id="new-deaths">00</div>
+    </div>
+
+    <div>
+      <div class="category-grid">TOTAL GLOBAL CASES</div>
+      <div class="number-grid" id="global-total">00</div>
+    </div>
+    <div>
+      <div class="category-grid">LAST UPDATED</div>
+      <div class="number-grid" id="last-updated"></div>
+    </div>
+    <br />
+    <br /><br />
+
+    <p
+      style="width:100%; max-width:500px; color:#919191;text-align: center; margin:auto; margin-top:60px;"
+    >
+      This site's data is based on Health Promotion Bureau's
+      <a href="https://hpb.health.gov.lk/en/api-documentation" target="_blank"
+        >Coronavirus API</a
+      >
+      and the time series plot is based on
+      <a href="https://github.com/pomber/covid19" target="_blank"
+        >Pomber's COVID-19 Data</a
+      >.
+    </p>
+    <br /><br />
+
+    <div class="footer" style="padding-top:20px; padding-bottom:10px">
+      <hr class="hrfooter" />
+      <p>
+        Made with ♥ by
+        <a href="https://github.com/Hela-Pawura/" target="_blank"
+          >Team Helapauwra</a
+        >
+      </p>
+      <a
+        href="https://github.com/Hela-Pawura/COVID-19-Sri-Lanka"
+        target="_blank"
+        >Source Code</a
+      >
+      &nbsp;
+      <a
+        href="https://github.com/Hela-Pawura/COVID-19-Sri-Lanka/graphs/contributors"
+        target="_blank"
+        >Contributors
+      </a>
+      <br />
+    </div>
+
+    <script
+      src="https://code.jquery.com/jquery-3.4.1.js"
+      integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU="
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.bundle.js"></script>
+    <script src="js/main.js"></script>
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD_1pLrdnWTqffEjdCLOYOzLmXT3csejUI&libraries=places&callback=initMap"
+      async
+      defer
+    ></script>
+  </body>
+</html>
